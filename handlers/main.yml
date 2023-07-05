@@ -1,2 +1,4 @@
 ---
 # handlers file for hadoop
+    - name: Reload bashrc
+      ansible.builtin.shell: . /home/{{ hadoop_user }}/.bashrc

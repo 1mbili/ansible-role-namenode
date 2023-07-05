@@ -1,6 +1,11 @@
 ---
 - name: Setup Hadoop namenodes
   hosts: namenodes
+  become: true
+
+  handlers:
+    - name: Reload bashrc
+      ansible.builtin.shell: . /home/{{ hadoop_user }}/.bashrc
 
   vars_files:
     - ../vars/main.yml
@@ -8,13 +13,12 @@
 
   pre_tasks:
     - name: Create Hadoop User
-      become: true
       ansible.builtin.user:
         name: "{{ hadoop_user }}"
         state: present
         shell: /bin/bash
+
     - name: Create SSH directory
-      become: true
       ansible.builtin.file:
         path: "/home/{{ hadoop_user }}/.ssh"
         state: directory
@@ -23,7 +27,6 @@
         group: "{{ hadoop_user }}"
 
     - name: copy public ssh key
-      become: true
       ansible.builtin.copy:
         src: "{{ hadoop_public_key }}"
         dest: "/home/{{ hadoop_user }}/.ssh/authorized_keys"
@@ -32,7 +35,6 @@
         mode: '0600'
 
     - name: copy private ssh key
-      become: true
       ansible.builtin.copy:
         src: "{{ hadoop_private_key }}"
         dest: "/home/{{ hadoop_user }}/.ssh/id_rsa"
@@ -42,7 +44,6 @@
 
 
     - name: Disable Password Authentication
-      become: true
       ansible.builtin.lineinfile:
         dest=/etc/ssh/sshd_config
         regexp='^PasswordAuthentication'
@@ -51,10 +52,10 @@
         backup=yes
 
   tasks:
-    - name: Install, configure and start datanode
+    - name: Set up namenode
+      become: true
       block:
         - name: Install Java
-          become: true
           ansible.builtin.apt:
             update_cache: true
             cache_valid_time: 3600
@@ -62,7 +63,6 @@
             state: present
 
         - name: Download Hadoop
-          become: true
           ansible.builtin.get_url:
             url: "{{ hadoop_download_url }}"
             dest: "/home/{{ hadoop_user }}/hadoop-{{ hadoop_version }}.tar.gz"
@@ -72,7 +72,6 @@
             timeout: "{{ download_timeout }}"
 
         - name: Unarchive Hadoop
-          become: true
           ansible.builtin.unarchive:
             src: "/home/{{ hadoop_user }}/hadoop-{{ hadoop_version }}.tar.gz"
             dest: "/home/{{ hadoop_user }}/"
@@ -82,7 +81,6 @@
             mode: '0755'
 
         - name: Create Hadoop symlink
-          become_user: "{{ hadoop_user }}"
           ansible.builtin.file:
             force: true
             src: "/home/{{ hadoop_user }}/hadoop-3.3.6"
@@ -93,22 +91,20 @@
             mode: '0755'
 
         - name: Change Hadoop configuration
-          become: true
           ansible.builtin.template:
-            src: '{{ item.src }}'
-            dest: '{{ item.dest }}'
+            src: "{{ item.src }}"
+            dest: "{{ item.dest }}"
             owner: "{{ hadoop_user }}"
             group: "{{ hadoop_user }}"
             mode: '0755'
           loop:
-            - { src: '../files/core-site.xml.j2', dest: '/home/hadoop/hadoop/etc/hadoop/core-site.xml' }
-            - { src: '../files/hdfs-site.xml.j2', dest: '/home/hadoop/hadoop/etc/hadoop/hdfs-site.xml' }
-            - { src: '../files/mapred-site.xml.j2', dest: '/home/hadoop/hadoop/etc/hadoop/mapred-site.xml' }
-            - { src: '../files/yarn-site.xml.j2', dest: '/home/hadoop/hadoop/etc/hadoop/yarn-site.xml' }
+            - { src: '../templates/core-site.xml.j2', dest: "/home/{{ hadoop_user }}/hadoop/etc/hadoop/core-site.xml" }
+            - { src: '../templates/hdfs-site.xml.j2', dest: "/home/{{ hadoop_user }}/hadoop/etc/hadoop/hdfs-site.xml" }
+            - { src: '../templates/mapred-site.xml.j2', dest: "/home/{{ hadoop_user }}/hadoop/etc/hadoop/mapred-site.xml" }
+            - { src: '../templates/yarn-site.xml.j2', dest: "/home/{{ hadoop_user }}/hadoop/etc/hadoop/yarn-site.xml" }
 
 
         - name: Add hadoop paths to bashrc
-          become: true
           ansible.builtin.lineinfile:
             dest: "/home/{{ hadoop_user }}/.bashrc"
             line: "{{ item.line }}"
@@ -127,7 +123,6 @@
             - Reload bashrc
 
         - name: Change JAVA_HOME in hadoop-env.sh
-          become: true
           ansible.builtin.lineinfile:
             path: /home/{{ hadoop_user }}/hadoop/etc/hadoop/hadoop-env.sh
             regexp: '^export JAVA_HOME='
@@ -135,7 +130,6 @@
             state: present
 
         - name: Create data directory
-          become: true
           ansible.builtin.file:
             path: /home/{{ hadoop_user }}/data
             state: directory
@@ -144,7 +138,6 @@
             mode: '0644'
 
         - name: Create namenode directory
-          become: true
           ansible.builtin.file:
             path: /home/{{ hadoop_user }}/data/nameNode
             state: directory
@@ -153,7 +146,6 @@
             mode: '0644'
 
         - name: Add IP address of all hosts to all hosts
-          become: true
           ansible.builtin.lineinfile:
             dest: /etc/hosts
             line: "{{ hostvars[item].ansible_host }} {{item}}"
@@ -163,7 +155,6 @@
           with_items: "{{ groups.all }}"
 
         - name: Add workers file
-          become: true
           ansible.builtin.lineinfile:
             dest: /home/{{ hadoop_user }}/hadoop/etc/hadoop/workers
             line: "{{item}}"
@@ -171,7 +162,3 @@
             state: present
           when: hostvars[item].ansible_host is defined
           with_items: "{{ groups.datanodes }}"
-
-  handlers:
-    - name: Reload bashrc
-      ansible.builtin.shell: . /home/{{ hadoop_user }}/.bashrc
