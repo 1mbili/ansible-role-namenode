@@ -1,0 +1,9 @@
+---
+# defaults file for hadoop
+hadoop_user : hadoop
+hadoop_private_key : ../temp/hadopik
+hadoop_public_key : ../temp/hadopik.pub
+hadoop_version : '3.3.6'
+hadoop_download_url: "https://dlcdn.apache.org/hadoop/common/hadoop-{{ hadoop_version}}/hadoop-{{ hadoop_version }}.tar.gz"
+namenode: nn1
+download_timeout : 1200

@@ -1,0 +1,21 @@
+---
+
+galaxy_info:
+  author: Michał Biliński
+  description: WUT student
+  company: Student
+  license: Beerware
+  min_ansible_version: '8'
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - BigData
+    - Hadoop
+
+dependencies: []
+
+  
