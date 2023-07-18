@@ -1,11 +1,12 @@
 ---
-
 galaxy_info:
+  role_name: namenode
+  namespace: 1mbili
   author: Michał Biliński
-  description: WUT student
+  description: Hadoop namenode for single namenode cluster
   company: Student
   license: Beerware
-  min_ansible_version: '8'
+  min_ansible_version: '2.9'
 
   platforms:
     - name: Ubuntu
@@ -13,9 +14,8 @@ galaxy_info:
         - all
 
   galaxy_tags:
-    - BigData
-    - Hadoop
+    - bigdata
+    - hadoop
 
 dependencies: []
 
-  

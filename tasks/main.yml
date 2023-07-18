@@ -28,6 +28,13 @@
     owner: "{{ hadoop_user }}"
     group: "{{ hadoop_user }}"
     mode: '0600'
+  
+- name: Ensure ssh-server is installed
+  ansible.builtin.apt:
+    name: openssh-server
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
 
 
 - name: Disable Password Authentication
@@ -39,10 +46,10 @@
 
 - name: Install Java
   ansible.builtin.apt:
-    update_cache: true
-    cache_valid_time: 3600
     name: openjdk-8-jdk
     state: present
+    update_cache: true
+    cache_valid_time: 3600
 
 - name: Download Hadoop
   ansible.builtin.get_url:
@@ -142,5 +149,6 @@
     line: "{{ item }}"
     regexp: '.*{{ item }}$'
     state: present
-  when: hostvars[item].ansible_host is defined
+  ignore_errors: true
+  when: (hostvars[item].ansible_host is defined)
   with_items: "{{ groups.datanodes }}"
