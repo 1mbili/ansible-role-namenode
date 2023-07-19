@@ -124,7 +124,7 @@
     state: directory
     owner: "{{ hadoop_user }}"
     group: "{{ hadoop_user }}"
-    mode: '0644'
+    mode: '0744'
 
 - name: Create namenode directory
   ansible.builtin.file:
@@ -132,7 +132,7 @@
     state: directory
     owner: "{{ hadoop_user }}"
     group: "{{ hadoop_user }}"
-    mode: '0644'
+    mode: '0744'
 
 - name: Add IP address of all hosts to all hosts
   ansible.builtin.lineinfile:

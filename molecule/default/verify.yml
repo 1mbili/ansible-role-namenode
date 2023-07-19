@@ -3,8 +3,23 @@
 
 - name: Verify
   hosts: all
+  become: true
+  become_user: hadoop
   gather_facts: false
+
+  pre_tasks:
+    - name: Ensure namenode is not running
+      ansible.builtin.command:
+        cmd:  '/home/hadoop/hadoop/sbin/stop-dfs.sh'
+
   tasks:
-    - name: Example assertion
-      ansible.builtin.assert:
-        that: true
+    - name: Ensure java is running
+      ansible.builtin.command:
+        cmd: jps
+      register: this
+      failed_when: "'Jps' not in this.stdout"
+
+    - name: Format hdfs
+      ansible.builtin.command:
+        cmd: '/home/hadoop/hadoop/bin/hdfs namenode -format -f'
+      register: this
