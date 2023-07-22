@@ -8,9 +8,19 @@
   gather_facts: false
 
   pre_tasks:
+
+    - name: Start ssh serwer
+      ansible.builtin.command:
+        cmd: '/etc/init.d/ssh start'
+
+    - name: add namenode to /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        line: '127.0.0.1 nn1'
+
     - name: Ensure namenode is not running
       ansible.builtin.command:
-        cmd:  '/home/hadoop/hadoop/sbin/stop-dfs.sh'
+        cmd: '/home/hadoop/hadoop/sbin/stop-dfs.sh'
 
   tasks:
     - name: Ensure java is running
@@ -21,5 +31,8 @@
 
     - name: Format hdfs
       ansible.builtin.command:
-        cmd: '/home/hadoop/hadoop/bin/hdfs namenode -format -f'
-      register: this
+        cmd: '/home/hadoop/hadoop/bin/hdfs namenode -format -force'
+
+    - name: Start namenode
+      ansible.builtin.command:
+        cmd: '/home/hadoop/hadoop/sbin/start-dfs.sh'

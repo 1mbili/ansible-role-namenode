@@ -64,6 +64,7 @@
   ansible.builtin.unarchive:
     src: "/home/{{ hadoop_user }}/hadoop-{{ hadoop_version }}.tar.gz"
     dest: "/home/{{ hadoop_user }}/"
+    creates: "/home/{{ hadoop_user}}/hadoop-{{ hadoop_version }}"
     remote_src: true
     owner: "{{ hadoop_user }}"
     group: "{{ hadoop_user }}"
@@ -114,7 +115,7 @@
 - name: Change JAVA_HOME in hadoop-env.sh
   ansible.builtin.lineinfile:
     path: /home/{{ hadoop_user }}/hadoop/etc/hadoop/hadoop-env.sh
-    regexp: '^export JAVA_HOME='
+    regexp: 'export JAVA_HOME='
     line: 'export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")'
     state: present
 
@@ -149,6 +150,6 @@
     line: "{{ item }}"
     regexp: '.*{{ item }}$'
     state: present
-  ignore_errors: true
+  ignore_errors: true # Workaround for molecule
   when: (hostvars[item].ansible_host is defined)
   with_items: "{{ groups.datanodes }}"
