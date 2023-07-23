@@ -1,9 +1,9 @@
 ---
 # defaults file for hadoop
-hadoop_user : hadoop
-hadoop_private_key : "{{ lookup('env','hadoop_private_ssh_key') }}"
-hadoop_public_key : "{{ lookup('env','hadoop_public_ssh_key') }}"
-hadoop_version : '3.3.6'
+hadoop_user: hadoop
+hadoop_private_key: "{{ lookup('env','hadoop_private_ssh_key') }}"
+hadoop_public_key: "{{ lookup('env','hadoop_public_ssh_key') }}"
+hadoop_version: '3.3.6'
 hadoop_download_url: "https://dlcdn.apache.org/hadoop/common/hadoop-{{ hadoop_version}}/hadoop-{{ hadoop_version }}.tar.gz"
 namenode: nn1
 download_timeout : 1200
